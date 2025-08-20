@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 // The main App component for the interactive financial sheet.
@@ -267,7 +269,6 @@ export default function App() {
       interestExpense: { amount2024: 12745, amount2023: 17218 },
     },
     otherIncome: 6677,
-    // Historical data added here
     incomeHistory: {
       2019: {
         occupancy: "64.34%",
@@ -336,6 +337,8 @@ export default function App() {
 
   // New state to manage the visibility of the historical data modal.
   const [showHistoricalModal, setShowHistoricalModal] = useState(false);
+  // State to track if any input is focused for floating summary
+  const [showFloatingSummary, setShowFloatingSummary] = useState(false);
 
   // Helper function to format numbers as currency with commas.
   const formatCurrency = (num) => {
@@ -388,9 +391,9 @@ export default function App() {
     const { value } = e.target;
     // Remove non-numeric characters (like '$' and ',') before parsing.
     const cleanedValue = value.replace(/[$,]/g, "");
-    const numValue = isNaN(parseFloat(cleanedValue))
+    const numValue = isNaN(Number.parseFloat(cleanedValue))
       ? 0
-      : parseFloat(cleanedValue);
+      : Number.parseFloat(cleanedValue);
 
     setFinancialData((prev) => {
       const newData = JSON.parse(JSON.stringify(prev));
@@ -436,6 +439,21 @@ export default function App() {
     setFinancialData(initialData.current);
   };
 
+  const handleInputFocus = () => {
+    setShowFloatingSummary(true);
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding to prevent flicker when moving between inputs
+    setTimeout(() => {
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && activeElement.tagName === "INPUT";
+      if (!isInputFocused) {
+        setShowFloatingSummary(false);
+      }
+    }, 100);
+  };
+
   // Render a single financial row.
   const renderRow = (
     label,
@@ -454,9 +472,9 @@ export default function App() {
     return (
       <div
         key={key}
-        className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 py-2 sm:py-3"
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-gray-200 py-3 gap-2"
       >
-        <div className="flex-1 text-left flex items-center mb-1 sm:mb-0">
+        <div className="flex-1 text-left flex items-center">
           <span className="font-semibold text-sm sm:text-base">{label}</span>
           {hasDefinition && (
             <span className="relative inline-block ml-2 group cursor-pointer text-gray-400 hover:text-indigo-600">
@@ -472,26 +490,27 @@ export default function App() {
                   clipRule="evenodd"
                 />
               </svg>
-              {/* Tooltip that is now responsive to prevent overflow on mobile */}
-              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-sm p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none md:left-full md:top-1/2 md:-translate-y-1/2 md:translate-x-0 md:mb-0 md:ml-2">
+              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none sm:left-auto sm:right-0 sm:top-1/2 sm:-translate-y-1/2 sm:translate-x-0 sm:mb-0 sm:mr-2 sm:max-w-sm sm:text-sm">
                 {definitions[key]}
               </span>
             </span>
           )}
         </div>
-        <div className="flex items-center w-full sm:w-auto">
+        <div className="flex items-center w-full sm:w-auto min-w-0">
           {editable ? (
-            <div className="flex flex-col sm:flex-row items-end sm:items-center w-full space-y-1 sm:space-y-0 sm:space-x-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full gap-2">
               <input
                 type="text"
-                className="w-full text-right font-mono p-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full sm:w-32 md:w-40 text-right font-mono p-2 text-sm rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-0"
                 value={formatCurrency(amount2024)}
                 onChange={(e) => handleInputChange(e, category, subcategory)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               {isEdited && (
                 <button
                   onClick={() => handleRevertClick(category, subcategory)}
-                  className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200"
+                  className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 whitespace-nowrap"
                   aria-label="Revert to original value"
                   title="Revert to original value"
                 >
@@ -500,7 +519,7 @@ export default function App() {
               )}
             </div>
           ) : (
-            <span className="text-right font-mono text-sm sm:text-base">
+            <span className="text-right font-mono text-sm sm:text-base md:text-lg">
               {formatCurrency(amount2024)}
             </span>
           )}
@@ -520,19 +539,16 @@ export default function App() {
     const itemKeys = items ? Object.keys(items) : [];
 
     return (
-      <div
-        key={category}
-        className="bg-white rounded-lg p-3 sm:p-4 mb-3 shadow-xl"
-      >
+      <div key={category} className="bg-white rounded-lg p-4 mb-4 shadow-xl">
         <div className="flex items-center justify-between pb-2 border-b-2 border-indigo-200">
-          <h2 className="text-base sm:text-lg font-bold text-indigo-700">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-indigo-700">
             {categoryName}
           </h2>
-          <span className="font-mono text-base sm:text-lg">
+          <span className="font-mono text-sm sm:text-base md:text-lg">
             {formatCurrency(amount2024)}
           </span>
         </div>
-        <div className="mt-2 pl-0 sm:pl-4">
+        <div className="mt-4 pl-0 sm:pl-4">
           {itemKeys.map((key) => {
             const label = key
               .replace(/([A-Z])/g, " $1")
@@ -546,53 +562,37 @@ export default function App() {
 
   const TotalsPanel = () => {
     return (
-      <div className="w-full p-4 bg-white rounded-lg shadow-xl mb-4 md:mb-0">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-bold text-indigo-700">
-            Summary
-          </h2>
-          <button
-            onClick={handleReset}
-            className="px-4 py-2 text-xs sm:text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+      <div className="w-full p-4 bg-white rounded-lg shadow-xl mb-4">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-indigo-700 mb-4">
+          Summary
+        </h2>
+        <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+          <span className="font-bold text-sm sm:text-base">Total Expenses</span>
+          <span className="font-mono text-sm sm:text-base">
+            {formatCurrency(totals.totalExpenses2024)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between py-2 border-b border-gray-200">
+          <span className="font-bold text-sm sm:text-base">Other Income</span>
+          <span className="font-mono text-sm sm:text-base">
+            {formatCurrency(financialData.otherIncome)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <span className="font-bold text-base sm:text-xl md:text-2xl">
+            Net Income (Loss)
+          </span>
+          <span
+            className={`font-mono text-base sm:text-xl md:text-2xl ${
+              totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
+            }`}
           >
-            Reset All
-          </button>
+            {formatCurrency(totals.netIncome2024)}
+          </span>
         </div>
-
-        <div className="flex flex-col space-y-1 mt-4">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-            <span className="font-semibold text-gray-700 text-sm">
-              Total Expenses
-            </span>
-            <span className="font-mono text-sm">
-              {formatCurrency(totals.totalExpenses2024)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-            <span className="font-semibold text-gray-700 text-sm">
-              Other Income
-            </span>
-            <span className="font-mono text-sm">
-              {formatCurrency(financialData.otherIncome)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between pt-2">
-            <span className="font-bold text-base sm:text-lg">
-              Net Income (Loss)
-            </span>
-            <span
-              className={`font-mono text-lg sm:text-xl ${
-                totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {formatCurrency(totals.netIncome2024)}
-            </span>
-          </div>
-        </div>
-
         <button
           onClick={() => setShowHistoricalModal(true)}
-          className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200 text-sm"
+          className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200 text-sm sm:text-base"
         >
           View Historical Data
         </button>
@@ -607,11 +607,11 @@ export default function App() {
     const history = financialData.incomeHistory;
 
     return createPortal(
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div className="bg-white rounded-lg p-6 sm:p-8 w-full max-w-4xl max-h-full overflow-y-auto relative">
+      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto overscroll-contain">
+        <div className="bg-white rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-4xl my-4 sm:my-8 relative max-h-[90vh] overflow-y-auto">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200 z-10"
             aria-label="Close"
           >
             <svg
@@ -629,7 +629,7 @@ export default function App() {
               />
             </svg>
           </button>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-indigo-700 mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-indigo-700 mb-6 pr-8">
             Historical Income & Performance
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -638,10 +638,10 @@ export default function App() {
                 key={year}
                 className="bg-gray-50 rounded-lg p-4 border border-gray-200"
               >
-                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2">
                   Year {year}
                 </h3>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-xs sm:text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Occupancy:</span>{" "}
                     <span className="font-semibold text-gray-800">
@@ -692,34 +692,91 @@ export default function App() {
     );
   };
 
+  const FloatingSummary = () => {
+    if (!showFloatingSummary) return null;
+
+    return (
+      <div className="fixed bottom-4 left-4 right-4 bg-white rounded-lg shadow-2xl border border-gray-200 p-3 z-40 md:hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="text-xs text-gray-600 mb-1">Net Income (Loss)</div>
+            <div
+              className={`font-mono text-lg font-bold ${
+                totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {formatCurrency(totals.netIncome2024)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-600 mb-1">Total Expenses</div>
+            <div className="font-mono text-sm">
+              {formatCurrency(totals.totalExpenses2024)}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowFloatingSummary(false)}
+            className="ml-3 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Hide summary"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans text-gray-800 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:space-x-8">
-        <div className="md:flex-1">
-          <div className="mb-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-center md:text-left text-indigo-700">
+    <div className="bg-gray-50 min-h-screen p-2 sm:p-4 md:p-8 font-sans text-gray-800 overscroll-contain">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:gap-8">
+        <div className="md:flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-center sm:text-left text-indigo-700">
               Financial Performance Analysis
             </h1>
-            <p className="text-center md:text-left text-gray-600 text-sm mt-1">
-              Edit the 2024 expense numbers to see how they impact your profit
-              in real time. Hover over the 'i' icon for definitions!
-            </p>
+            <button
+              onClick={handleReset}
+              className="hidden md:block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm"
+            >
+              Reset All
+            </button>
           </div>
+          <p className="text-center sm:text-left text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
+            Edit the 2024 expense numbers to see how they impact your profit in
+            real time. Hover over the 'i' icon for definitions!
+          </p>
 
           {/* Main content area */}
           <div className="md:hidden">
             <TotalsPanel />
+            <button
+              onClick={handleReset}
+              className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm"
+            >
+              Reset All
+            </button>
           </div>
 
-          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-xl mb-3">
-            <h2 className="text-base sm:text-lg font-bold text-indigo-700 mb-2">
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-xl mb-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-indigo-700 mb-2">
               Income
             </h2>
-            <div className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 pb-2">
-              <span className="flex-1 font-semibold text-gray-700 text-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-gray-200 pb-2 gap-2">
+              <span className="flex-1 font-semibold text-gray-700 text-sm sm:text-base">
                 Revenues
               </span>
-              <span className="font-mono text-sm text-right">
+              <span className="font-mono text-right text-sm sm:text-base">
                 {formatCurrency(financialData.revenues)}
               </span>
             </div>
@@ -731,8 +788,8 @@ export default function App() {
           {renderCategory("generalAndAdministrative")}
 
           {/* Other expenses */}
-          <div className="bg-white rounded-lg p-3 sm:p-4 mb-3 shadow-xl">
-            <h2 className="text-base sm:text-lg font-bold text-indigo-700 mb-2">
+          <div className="bg-white rounded-lg p-4 mb-4 shadow-xl">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-indigo-700 mb-2">
               Other Expenses
             </h2>
             {renderRow(
@@ -783,6 +840,7 @@ export default function App() {
         isOpen={showHistoricalModal}
         onClose={() => setShowHistoricalModal(false)}
       />
+      <FloatingSummary />
     </div>
   );
 }
