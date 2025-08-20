@@ -454,10 +454,10 @@ export default function App() {
     return (
       <div
         key={key}
-        className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 py-3"
+        className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 py-2 sm:py-3"
       >
-        <div className="flex-1 text-left flex items-center mb-2 sm:mb-0">
-          <span className="font-semibold">{label}</span>
+        <div className="flex-1 text-left flex items-center mb-1 sm:mb-0">
+          <span className="font-semibold text-sm sm:text-base">{label}</span>
           {hasDefinition && (
             <span className="relative inline-block ml-2 group cursor-pointer text-gray-400 hover:text-indigo-600">
               <svg
@@ -473,7 +473,7 @@ export default function App() {
                 />
               </svg>
               {/* Tooltip that is now responsive to prevent overflow on mobile */}
-              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-sm p-2 text-sm text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none md:left-full md:top-1/2 md:-translate-y-1/2 md:translate-x-0 md:mb-0 md:ml-2">
+              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-sm p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none md:left-full md:top-1/2 md:-translate-y-1/2 md:translate-x-0 md:mb-0 md:ml-2">
                 {definitions[key]}
               </span>
             </span>
@@ -481,10 +481,10 @@ export default function App() {
         </div>
         <div className="flex items-center w-full sm:w-auto">
           {editable ? (
-            <div className="flex flex-col sm:flex-row items-end sm:items-center w-full space-y-2 sm:space-y-0 sm:space-x-2">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center w-full space-y-1 sm:space-y-0 sm:space-x-2">
               <input
                 type="text"
-                className="w-full text-right font-mono p-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-right font-mono p-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 value={formatCurrency(amount2024)}
                 onChange={(e) => handleInputChange(e, category, subcategory)}
               />
@@ -500,7 +500,7 @@ export default function App() {
               )}
             </div>
           ) : (
-            <span className="text-right font-mono">
+            <span className="text-right font-mono text-sm sm:text-base">
               {formatCurrency(amount2024)}
             </span>
           )}
@@ -520,16 +520,19 @@ export default function App() {
     const itemKeys = items ? Object.keys(items) : [];
 
     return (
-      <div key={category} className="bg-white rounded-lg p-4 mb-4 shadow-xl">
+      <div
+        key={category}
+        className="bg-white rounded-lg p-3 sm:p-4 mb-3 shadow-xl"
+      >
         <div className="flex items-center justify-between pb-2 border-b-2 border-indigo-200">
-          <h2 className="text-lg sm:text-xl font-bold text-indigo-700">
+          <h2 className="text-base sm:text-lg font-bold text-indigo-700">
             {categoryName}
           </h2>
-          <span className="font-mono text-lg">
+          <span className="font-mono text-base sm:text-lg">
             {formatCurrency(amount2024)}
           </span>
         </div>
-        <div className="mt-4 pl-0 sm:pl-4">
+        <div className="mt-2 pl-0 sm:pl-4">
           {itemKeys.map((key) => {
             const label = key
               .replace(/([A-Z])/g, " $1")
@@ -543,35 +546,53 @@ export default function App() {
 
   const TotalsPanel = () => {
     return (
-      <div className="w-full p-4 bg-white rounded-lg shadow-xl mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-indigo-700 mb-4">
-          Summary
-        </h2>
-        <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-          <span className="font-bold">Total Expenses</span>
-          <span className="font-mono">
-            {formatCurrency(totals.totalExpenses2024)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between py-2 border-b border-gray-200">
-          <span className="font-bold">Other Income</span>
-          <span className="font-mono">
-            {formatCurrency(financialData.otherIncome)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between pt-2">
-          <span className="font-bold text-2xl">Net Income (Loss)</span>
-          <span
-            className={`font-mono text-2xl ${
-              totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
-            }`}
+      <div className="w-full p-4 bg-white rounded-lg shadow-xl mb-4 md:mb-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-bold text-indigo-700">
+            Summary
+          </h2>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 text-xs sm:text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
           >
-            {formatCurrency(totals.netIncome2024)}
-          </span>
+            Reset All
+          </button>
         </div>
+
+        <div className="flex flex-col space-y-1 mt-4">
+          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+            <span className="font-semibold text-gray-700 text-sm">
+              Total Expenses
+            </span>
+            <span className="font-mono text-sm">
+              {formatCurrency(totals.totalExpenses2024)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+            <span className="font-semibold text-gray-700 text-sm">
+              Other Income
+            </span>
+            <span className="font-mono text-sm">
+              {formatCurrency(financialData.otherIncome)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between pt-2">
+            <span className="font-bold text-base sm:text-lg">
+              Net Income (Loss)
+            </span>
+            <span
+              className={`font-mono text-lg sm:text-xl ${
+                totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {formatCurrency(totals.netIncome2024)}
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={() => setShowHistoricalModal(true)}
-          className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200"
+          className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200 text-sm"
         >
           View Historical Data
         </button>
@@ -608,7 +629,7 @@ export default function App() {
               />
             </svg>
           </button>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-indigo-700 mb-6">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-indigo-700 mb-6">
             Historical Income & Performance
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -675,42 +696,30 @@ export default function App() {
     <div className="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans text-gray-800 overflow-x-hidden">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:space-x-8">
         <div className="md:flex-1">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-2">
+          <div className="mb-4">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-center md:text-left text-indigo-700">
               Financial Performance Analysis
             </h1>
-            <button
-              onClick={handleReset}
-              className="mt-4 md:mt-0 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 hidden md:block"
-            >
-              Reset All
-            </button>
+            <p className="text-center md:text-left text-gray-600 text-sm mt-1">
+              Edit the 2024 expense numbers to see how they impact your profit
+              in real time. Hover over the 'i' icon for definitions!
+            </p>
           </div>
-          <p className="text-center md:text-left text-gray-600 mb-8">
-            Edit the 2024 expense numbers to see how they impact your profit in
-            real time. Hover over the 'i' icon for definitions!
-          </p>
 
           {/* Main content area */}
           <div className="md:hidden">
             <TotalsPanel />
-            <button
-              onClick={handleReset}
-              className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
-            >
-              Reset All
-            </button>
           </div>
 
-          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-xl mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
+          <div className="bg-white rounded-lg p-3 sm:p-4 shadow-xl mb-3">
+            <h2 className="text-base sm:text-lg font-bold text-indigo-700 mb-2">
               Income
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 pb-2">
-              <span className="flex-1 font-semibold text-gray-700">
+              <span className="flex-1 font-semibold text-gray-700 text-sm">
                 Revenues
               </span>
-              <span className="font-mono text-right">
+              <span className="font-mono text-sm text-right">
                 {formatCurrency(financialData.revenues)}
               </span>
             </div>
@@ -722,8 +731,8 @@ export default function App() {
           {renderCategory("generalAndAdministrative")}
 
           {/* Other expenses */}
-          <div className="bg-white rounded-lg p-4 mb-4 shadow-xl">
-            <h2 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
+          <div className="bg-white rounded-lg p-3 sm:p-4 mb-3 shadow-xl">
+            <h2 className="text-base sm:text-lg font-bold text-indigo-700 mb-2">
               Other Expenses
             </h2>
             {renderRow(
