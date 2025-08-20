@@ -263,12 +263,23 @@ export default function App() {
           printingAndOfficeSupplies: { amount2024: 141, amount2023: 1693 },
         },
       },
-      otherExpenses: { amount2024: 28161, amount2023: 33071 },
+      otherExpenses: {
+        amount2024: 28161,
+        amount2023: 33071,
+        items: {
+          longDistanceExpense: { amount2024: 2781, amount2023: 3200 },
+          localCallsExpense: { amount2024: 11276, amount2023: 12500 },
+          otherTelephoneLineCosts: { amount2024: 3287, amount2023: 3800 },
+          serviceEquipmentTax: { amount2024: 799, amount2023: 900 },
+          hboCable: { amount2024: 9722, amount2023: 10200 },
+          guestLaundry: { amount2024: 296, amount2023: 2471 },
+        },
+      },
       depreciation: { amount2024: 116815, amount2023: 143894 },
       amortization: { amount2024: 0, amount2023: 821 },
       interestExpense: { amount2024: 12745, amount2023: 17218 },
     },
-
+    otherIncome: 6677,
     incomeHistory: {
       2019: {
         occupancy: "64.34%",
@@ -371,7 +382,11 @@ export default function App() {
       }
     }
 
-    const netIncome2024 = financialData.revenues - totalExpenses2024;
+    const otherIncomeValue = isNaN(financialData.otherIncome)
+      ? 0
+      : financialData.otherIncome || 0;
+    const netIncome2024 =
+      financialData.revenues - totalExpenses2024 + otherIncomeValue;
 
     setTotals({
       ...totals,
@@ -489,7 +504,7 @@ export default function App() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none sm:left-auto sm:right-0 sm:top-1/2 sm:-translate-y-1/2 sm:translate-x-0 sm:mb-0 sm:mr-2 sm:max-w-sm sm:text-sm">
+              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none sm:left-auto sm:right-0 sm:top-1/2 sm:-translate-y-1/2 sm:translate-x-0 sm:mb-0 sm:max-w-sm sm:text-sm">
                 {definitions[key]}
               </span>
             </span>
@@ -560,6 +575,10 @@ export default function App() {
   };
 
   const TotalsPanel = () => {
+    const otherIncomeDisplay = isNaN(financialData.otherIncome)
+      ? 0
+      : financialData.otherIncome || 0;
+
     return (
       <div className="w-full p-4 bg-white rounded-lg shadow-xl mb-4">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-indigo-700 mb-4">
@@ -571,7 +590,12 @@ export default function App() {
             {formatCurrency(totals.totalExpenses2024)}
           </span>
         </div>
-
+        <div className="flex items-center justify-between py-2 border-b border-gray-200">
+          <span className="font-bold text-sm sm:text-base">Other Income</span>
+          <span className="font-mono text-sm sm:text-base">
+            {formatCurrency(otherIncomeDisplay)}
+          </span>
+        </div>
         <div className="flex items-center justify-between pt-2">
           <span className="font-bold text-base sm:text-xl md:text-2xl">
             Net Income (Loss)
@@ -686,54 +710,13 @@ export default function App() {
     );
   };
 
-  const FloatingSummary = () => {
-    if (!showFloatingSummary) return null;
-
-    return (
-      <div className="fixed bottom-4 left-4 right-4 bg-white rounded-lg shadow-2xl border border-gray-200 p-3 z-40 md:hidden">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="text-xs text-gray-600 mb-1">Net Income (Loss)</div>
-            <div
-              className={`font-mono text-lg font-bold ${
-                totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {formatCurrency(totals.netIncome2024)}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs text-gray-600 mb-1">Total Expenses</div>
-            <div className="font-mono text-sm">
-              {formatCurrency(totals.totalExpenses2024)}
-            </div>
-          </div>
-          <button
-            onClick={() => setShowFloatingSummary(false)}
-            className="ml-3 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Hide summary"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen p-2 sm:p-4 md:p-8 font-sans text-gray-800 overscroll-contain">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:gap-8">
+      <div
+        className={`max-w-6xl mx-auto flex flex-col md:flex-row md:gap-8 ${
+          showFloatingSummary ? "pb-24 md:pb-8" : ""
+        }`}
+      >
         <div className="md:flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-center sm:text-left text-indigo-700">
@@ -782,9 +765,12 @@ export default function App() {
           {renderCategory("generalAndAdministrative")}
 
           {/* Other expenses */}
+          {renderCategory("otherExpenses")}
+
+          {/* Other single-line expenses */}
           <div className="bg-white rounded-lg p-4 mb-4 shadow-xl">
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-indigo-700 mb-2">
-              Other Expenses
+              Additional Expenses
             </h2>
             {renderRow(
               "Banquet operating costs",
@@ -797,12 +783,6 @@ export default function App() {
               financialData.expenses.salesAndMarketing.amount2024,
               true,
               "salesAndMarketing"
-            )}
-            {renderRow(
-              "Other expenses",
-              financialData.expenses.otherExpenses.amount2024,
-              true,
-              "otherExpenses"
             )}
             {renderRow(
               "Depreciation",
@@ -834,7 +814,48 @@ export default function App() {
         isOpen={showHistoricalModal}
         onClose={() => setShowHistoricalModal(false)}
       />
-      <FloatingSummary />
+      <div
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-40 md:hidden transition-transform duration-200 ${
+          showFloatingSummary ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex-1">
+            <div className="text-xs text-gray-600">Net Income</div>
+            <div
+              className={`font-mono text-base font-bold ${
+                totals.netIncome2024 < 0 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {formatCurrency(totals.netIncome2024)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-600">Total Expenses</div>
+            <div className="font-mono text-sm">
+              {formatCurrency(totals.totalExpenses2024)}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowFloatingSummary(false)}
+            className="ml-3 text-gray-400 hover:text-gray-600 transition-colors p-1"
+            aria-label="Hide summary"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L6 11.414l-4.293 4.293a1 1 0 01-1.414-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
