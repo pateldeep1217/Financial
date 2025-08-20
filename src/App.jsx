@@ -472,18 +472,19 @@ export default function App() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="absolute z-50 left-full ml-2 top-1/2 -translate-y-1/2 w-max max-w-sm p-2 text-sm text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              {/* Tooltip that is now responsive to prevent overflow on mobile */}
+              <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-sm p-2 text-sm text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none md:left-full md:top-1/2 md:-translate-y-1/2 md:translate-x-0 md:mb-0 md:ml-2">
                 {definitions[key]}
               </span>
             </span>
           )}
         </div>
-        <div className="flex flex-col items-end w-full sm:w-auto">
+        <div className="flex items-center w-full sm:w-auto">
           {editable ? (
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center w-full space-y-2 sm:space-y-0 sm:space-x-2">
               <input
                 type="text"
-                className="w-full sm:w-48 text-right font-mono p-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-right font-mono p-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={formatCurrency(amount2024)}
                 onChange={(e) => handleInputChange(e, category, subcategory)}
               />
@@ -671,16 +672,16 @@ export default function App() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans text-gray-800">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans text-gray-800 overflow-x-hidden">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:space-x-8">
         <div className="md:flex-1">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-center md:text-left text-indigo-700">
               Financial Performance Analysis
             </h1>
             <button
               onClick={handleReset}
-              className="hidden md:block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+              className="mt-4 md:mt-0 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 hidden md:block"
             >
               Reset All
             </button>
