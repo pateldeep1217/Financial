@@ -268,7 +268,7 @@ export default function App() {
       amortization: { amount2024: 0, amount2023: 821 },
       interestExpense: { amount2024: 12745, amount2023: 17218 },
     },
-    otherIncome: 6677,
+
     incomeHistory: {
       2019: {
         occupancy: "64.34%",
@@ -371,8 +371,7 @@ export default function App() {
       }
     }
 
-    const netIncome2024 =
-      financialData.revenues - totalExpenses2024 + financialData.otherIncome;
+    const netIncome2024 = financialData.revenues - totalExpenses2024;
 
     setTotals({
       ...totals,
@@ -572,12 +571,7 @@ export default function App() {
             {formatCurrency(totals.totalExpenses2024)}
           </span>
         </div>
-        <div className="flex items-center justify-between py-2 border-b border-gray-200">
-          <span className="font-bold text-sm sm:text-base">Other Income</span>
-          <span className="font-mono text-sm sm:text-base">
-            {formatCurrency(financialData.otherIncome)}
-          </span>
-        </div>
+
         <div className="flex items-center justify-between pt-2">
           <span className="font-bold text-base sm:text-xl md:text-2xl">
             Net Income (Loss)
